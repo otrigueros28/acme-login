@@ -2,10 +2,10 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 const path = require('path');
+const session = require('express-session');
+const Sequelize = require('sequelize');
 
-app.use(require('express-session')({
-  secret: process.env.SECRET
-}));
+
 const port = process.env.PORT || 3000;
 app.listen(port, ()=> console.log(`listening on port ${port}`));
 
@@ -22,7 +22,15 @@ const users = {
   }
 };
 
+
+app.use(express.json());
 app.use('/dist', express.static(path.join(__dirname, 'dist')));
+
+app.use(session({
+  secret: 'something',
+  resave: false,
+  saveUninitialized: true,
+}));
 
 app.post('/api/sessions', (req, res, next)=> {
   const user = users[req.body.username];
