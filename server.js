@@ -3,24 +3,14 @@ const app = express();
 app.use(express.json());
 const path = require('path');
 const session = require('express-session');
-const Sequelize = require('sequelize');
+const db = require('./db');
+const {syncAndSeed, models} = db;
+const {User}  = models;
 
 
+syncAndSeed();
 const port = process.env.PORT || 3000;
 app.listen(port, ()=> console.log(`listening on port ${port}`));
-
-const users = {
-  moe: {
-    id: 1,
-    name: 'moe',
-    favoriteWord: 'foo'
-  },
-  lucy: {
-    id: 2,
-    name: 'lucy',
-    favoriteWord: 'bar'
-  }
-};
 
 
 app.use(express.json());
@@ -32,6 +22,12 @@ app.use(session({
   saveUninitialized: true,
 }));
 
+app.get('/api/users', (req, res, next)=> {
+  User.findAll()
+    .then(user => res.send(user))
+    .catch(next)
+});
+
 app.post('/api/sessions', (req, res, next)=> {
   const user = users[req.body.username];
   if(user){
@@ -40,6 +36,7 @@ app.post('/api/sessions', (req, res, next)=> {
   }
   next({ status: 401 });
 });
+
 
 app.get('/api/sessions', (req, res, next)=> {
   const user = req.session.user;
